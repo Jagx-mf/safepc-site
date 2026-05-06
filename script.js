@@ -90,72 +90,72 @@ if ('IntersectionObserver' in window) {
 }
 
 /* ── Formulaire Formspree ── */
-const contactForm = document.querySelector('#contact-form');
-const submitBtn   = document.querySelector('#submit-btn');
-const formStatus  = document.querySelector('#form-status');
+document.addEventListener('DOMContentLoaded', () => {
+  const forms = document.querySelectorAll('form#contact-form, form.contact-form');
 
-if (contactForm) {
-  let statusElement = formStatus;
+  forms.forEach((form) => {
+    const submitBtn = form.querySelector('#submit-btn') || form.querySelector('button[type="submit"]');
+    let formStatus = form.querySelector('#form-status');
 
-  if (!statusElement && submitBtn) {
-    statusElement = document.createElement('p');
-    statusElement.className = 'form-note';
-    statusElement.id = 'form-status';
-    statusElement.setAttribute('aria-live', 'polite');
-    submitBtn.insertAdjacentElement('afterend', statusElement);
-  }
-
-  contactForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    if (!statusElement) return;
-
-    // Validation simple
-    if (!contactForm.checkValidity()) {
-      contactForm.reportValidity();
-      return;
-    }
-
-    // Vérification honeypot
-    if (contactForm.querySelector('[name="_gotcha"]')?.value) return;
-
-    // État chargement
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Envoi en cours…';
-    }
-    statusElement.textContent = 'Envoi du message en cours…';
-    statusElement.className = 'form-note';
-
-    try {
-      const data = new FormData(contactForm);
-      const response = await fetch(contactForm.action, {
-        method: 'POST',
-        body: data,
-        headers: { Accept: 'application/json' },
-      });
-
-      if (response.ok) {
-        statusElement.textContent = '✓ Message envoyé ! SafePC a bien reçu votre demande. Vous recevrez généralement une réponse sous 1 heure pendant les horaires d’ouverture.';
-        statusElement.classList.add('success');
-        contactForm.reset();
-      } else {
-        const json = await response.json().catch(() => ({}));
-        throw new Error(json?.errors?.[0]?.message || 'Erreur réseau');
-      }
-    } catch (err) {
-      statusElement.textContent =
-        'Une erreur est survenue. Appelez directement le 06 86 11 28 71 ou écrivez à contactsafepc@gmail.com.';
-      statusElement.classList.add('error');
-      console.error('Formspree error:', err);
-    } finally {
+    if (!formStatus) {
+      formStatus = document.createElement('p');
+      formStatus.id = 'form-status';
+      formStatus.className = 'form-note';
+      formStatus.setAttribute('aria-live', 'polite');
       if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Envoyer ma demande';
+        submitBtn.insertAdjacentElement('afterend', formStatus);
+      } else {
+        form.appendChild(formStatus);
       }
     }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      if (form.querySelector('[name="_gotcha"]')?.value) return;
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Envoi en cours…';
+      }
+
+      formStatus.textContent = 'Envoi du message en cours…';
+      formStatus.className = 'form-note';
+
+      try {
+        const data = new FormData(form);
+
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { Accept: 'application/json' },
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur Formspree');
+        }
+
+        formStatus.textContent = '✓ Message envoyé ! SafePC a bien reçu votre demande. Vous recevrez généralement une réponse sous 1 heure pendant les horaires d’ouverture.';
+        formStatus.className = 'form-note success';
+        form.reset();
+      } catch (error) {
+        formStatus.textContent = 'Une erreur est survenue. Appelez directement le 06 86 11 28 71 ou écrivez à contactsafepc@gmail.com.';
+        formStatus.className = 'form-note error';
+        console.error('Erreur formulaire SafePC :', error);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Envoyer ma demande';
+        }
+      }
+    });
   });
-}
+});
 
 /* ── Lien Facebook : avertissement si URL non configurée ── */
 const fbLink = document.querySelector('.btn-facebook');
