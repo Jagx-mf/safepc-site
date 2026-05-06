@@ -1189,13 +1189,35 @@ h1 em {
 }
 
 .form-note {
-  font-size: .83rem;
-  color: var(--text-muted);
-  margin-top: .5rem;
+  margin-top: 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 600;
   text-align: center;
+  color: #3e5570;
 }
-.form-note.success { color: var(--safety); font-weight: 700; }
-.form-note.error   { color: #c0392b; font-weight: 700; }
+.form-note.success {
+  color: #0f6b4f;
+  background: #d6f5ee;
+  border: 1px solid #8bd8c2;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+.form-note.error {
+  color: #8a1f1f;
+  background: #fde2e2;
+  border: 1px solid #f3aaaa;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+#contact .form-note {
+  color: #3e5570;
+}
+#contact .form-note.success {
+  color: #0f6b4f;
+}
+#contact .form-note.error {
+  color: #8a1f1f;
+}
 
 /* ── Footer ── */
 .site-footer {
