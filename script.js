@@ -106,7 +106,7 @@ if (contactForm && formStatus) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Envoi en cours…';
     }
-    formStatus.textContent = '✓ Message envoyé ! SafePC a bien reçu votre demande. Vous recevrez généralement une réponse sous 1 heure pendant les horaires d’ouverture.';
+    formStatus.textContent = 'Envoi du message en cours…';
     formStatus.className = 'form-note';
 
     try {
@@ -118,7 +118,7 @@ if (contactForm && formStatus) {
       });
 
       if (response.ok) {
-        formStatus.textContent = '✓ Message envoyé ! SafePC vous répondra dans les meilleurs délais.';
+        formStatus.textContent = '✓ Message envoyé ! SafePC a bien reçu votre demande. Vous recevrez généralement une réponse sous 1 heure pendant les horaires d’ouverture.';
         formStatus.classList.add('success');
         contactForm.reset();
       } else {
