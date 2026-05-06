@@ -50,47 +50,65 @@ faqButtons.forEach((button) => {
 
 /* ── Scroll reveal ── */
 const revealItems = document.querySelectorAll('.section-reveal');
-const revealObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  },
-  { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-);
+if ('IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
 
-revealItems.forEach((item) => revealObserver.observe(item));
+  revealItems.forEach((item) => revealObserver.observe(item));
+} else {
+  revealItems.forEach((item) => item.classList.add('visible'));
+}
 
 /* ── Lien de navigation actif au scroll ── */
 const sections = document.querySelectorAll('section[id], header[id]');
 const navLinks  = document.querySelectorAll('.main-nav a[href^="#"]');
 
-const navObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        navLinks.forEach((link) => link.classList.remove('active'));
-        const active = document.querySelector(`.main-nav a[href="#${entry.target.id}"]`);
-        if (active) active.classList.add('active');
-      }
-    });
-  },
-  { rootMargin: '-50% 0px -50% 0px' }
-);
+if ('IntersectionObserver' in window) {
+  const navObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          navLinks.forEach((link) => link.classList.remove('active'));
+          const active = document.querySelector(`.main-nav a[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    },
+    { rootMargin: '-50% 0px -50% 0px' }
+  );
 
-sections.forEach((s) => navObserver.observe(s));
+  sections.forEach((s) => navObserver.observe(s));
+}
 
 /* ── Formulaire Formspree ── */
 const contactForm = document.querySelector('#contact-form');
 const submitBtn   = document.querySelector('#submit-btn');
 const formStatus  = document.querySelector('#form-status');
 
-if (contactForm && formStatus) {
+if (contactForm) {
+  let statusElement = formStatus;
+
+  if (!statusElement && submitBtn) {
+    statusElement = document.createElement('p');
+    statusElement.className = 'form-note';
+    statusElement.id = 'form-status';
+    statusElement.setAttribute('aria-live', 'polite');
+    submitBtn.insertAdjacentElement('afterend', statusElement);
+  }
+
   contactForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    if (!statusElement) return;
 
     // Validation simple
     if (!contactForm.checkValidity()) {
@@ -106,8 +124,8 @@ if (contactForm && formStatus) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Envoi en cours…';
     }
-    formStatus.textContent = 'Envoi du message en cours…';
-    formStatus.className = 'form-note';
+    statusElement.textContent = 'Envoi du message en cours…';
+    statusElement.className = 'form-note';
 
     try {
       const data = new FormData(contactForm);
@@ -118,17 +136,17 @@ if (contactForm && formStatus) {
       });
 
       if (response.ok) {
-        formStatus.textContent = '✓ Message envoyé ! SafePC a bien reçu votre demande. Vous recevrez généralement une réponse sous 1 heure pendant les horaires d’ouverture.';
-        formStatus.classList.add('success');
+        statusElement.textContent = '✓ Message envoyé ! SafePC a bien reçu votre demande. Vous recevrez généralement une réponse sous 1 heure pendant les horaires d’ouverture.';
+        statusElement.classList.add('success');
         contactForm.reset();
       } else {
         const json = await response.json().catch(() => ({}));
         throw new Error(json?.errors?.[0]?.message || 'Erreur réseau');
       }
     } catch (err) {
-      formStatus.textContent =
+      statusElement.textContent =
         'Une erreur est survenue. Appelez directement le 06 86 11 28 71 ou écrivez à contactsafepc@gmail.com.';
-      formStatus.classList.add('error');
+      statusElement.classList.add('error');
       console.error('Formspree error:', err);
     } finally {
       if (submitBtn) {
